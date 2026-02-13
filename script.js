@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 0. Preloader Removal
+    window.addEventListener('load', () => {
+        const preloader = document.getElementById('loading-screen');
+        const app = document.getElementById('app');
+        setTimeout(() => {
+            preloader.style.opacity = '0';
+            app.classList.remove('hidden-init');
+            setTimeout(() => preloader.remove(), 1000);
+        }, 500);
+    });
+
     const yesBtn = document.getElementById('yesBtn');
     const noBtn = document.getElementById('noBtn');
     const heroSection = document.getElementById('hero');
@@ -42,6 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             mainContent.classList.remove('hidden');
             document.body.style.overflow = 'auto'; 
+            
+            // Lazy-play videos in the grid to save initial loading time
+            document.querySelectorAll('.video-cell video').forEach(v => {
+                v.preload = "auto";
+                v.play().catch(e => console.log("Grid video blocked", e));
+            });
+
             startTyping();
             createPolaroids();
             createVideoGrid();
@@ -71,17 +89,18 @@ document.addEventListener('DOMContentLoaded', () => {
             'videos/IMG_3128.MP4', 'videos/IMG_3129.MP4', 'videos/IMG_3130.MP4',
             'videos/IMG_3131.MP4', 'videos/IMG_3132.MP4', 'videos/IMG_3133.MP4',
             'videos/IMG_3134.MP4', 'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
+            'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
             'videos/IMG_3138.MP4'
         ];
 
-        // Create 30 cells (5x6 grid)
-        for (let i = 0; i < 30; i++) {
+        // Create 15 cells (3x5 grid optimized for mobile performance)
+        for (let i = 0; i < 15; i++) {
             const videoUrl = videoFiles[i % videoFiles.length];
             const cell = document.createElement('div');
             cell.className = 'video-cell';
             
             cell.innerHTML = `
-                <video autoplay muted loop playsinline>
+                <video muted loop playsinline preload="none">
                     <source src="${videoUrl}" type="video/mp4">
                 </video>
             `;

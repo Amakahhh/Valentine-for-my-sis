@@ -9,8 +9,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div id="app">
+    <div id="loading-screen">
+        <div class="loading-heart"></div>
+        <div class="loading-text">Preparing your surprise... ❤️</div>
+    </div>
+
+    <div id="app" class="hidden-init">
         <div class="beating-heart"></div>
         <!-- Section 1: The Invitation -->
         <section id="hero" class="screen">
@@ -75,7 +79,7 @@
             <!-- Minimal Audio -->
             <div class="audio-player-card">
                 <div class="music-text">Best Part - Daniel Caesar</div>
-                <audio id="bgMusic" loop>
+                <audio id="bgMusic" loop preload="auto">
                     <source src="HER_-_Best_Part_CeeNaija.com_.mp3" type="audio/mpeg">
                 </audio>
                 <button id="playPauseBtn" class="music-btn">PLAY</button>
