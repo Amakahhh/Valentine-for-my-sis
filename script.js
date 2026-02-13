@@ -54,15 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
             mainContent.classList.remove('hidden');
             document.body.style.overflow = 'auto'; 
             
-            // Lazy-play videos in the grid to save initial loading time
-            document.querySelectorAll('.video-cell video').forEach(v => {
-                v.preload = "auto";
-                v.play().catch(e => console.log("Grid video blocked", e));
-            });
+            // Create the grid - IntersectionObserver inside will handle the playing
+            createVideoGrid();
 
             startTyping();
             createPolaroids();
-            createVideoGrid();
             createCelebration();
         }, 800);
     });
@@ -82,31 +78,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. Video Grid Generator
-    function createVideoGrid() {
-        const grid = document.getElementById('video-grid');
-        const videoFiles = [
-            'videos/IMG_3125.MP4', 'videos/IMG_3126.MP4', 'videos/IMG_3127.MP4',
-            'videos/IMG_3128.MP4', 'videos/IMG_3129.MP4', 'videos/IMG_3130.MP4',
-            'videos/IMG_3131.MP4', 'videos/IMG_3132.MP4', 'videos/IMG_3133.MP4',
-            'videos/IMG_3134.MP4', 'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
-            'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
-            'videos/IMG_3138.MP4'
-        ];
+function createVideoGrid() {
+    const grid = document.getElementById('video-grid');
+    const videoFiles = [
+        'videos/IMG_3125.MP4', 'videos/IMG_3126.MP4', 'videos/IMG_3127.MP4',
+        'videos/IMG_3128.MP4', 'videos/IMG_3129.MP4', 'videos/IMG_3130.MP4',
+        'videos/IMG_3131.MP4', 'videos/IMG_3132.MP4', 'videos/IMG_3133.MP4',
+        'videos/IMG_3134.MP4', 'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
+        'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
+        'videos/IMG_3138.MP4'
+    ];
 
-        // Create 15 cells (3x5 grid optimized for mobile performance)
-        for (let i = 0; i < 15; i++) {
-            const videoUrl = videoFiles[i % videoFiles.length];
-            const cell = document.createElement('div');
-            cell.className = 'video-cell';
-            
-            cell.innerHTML = `
-                <video muted loop playsinline preload="none">
-                    <source src="${videoUrl}" type="video/mp4">
-                </video>
-            `;
-            grid.appendChild(cell);
-        }
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const video = entry.target.querySelector('video');
+            if (entry.isIntersecting) {
+                video.preload = "auto";
+                video.play().catch(e => console.log("Video play delayed", e));
+            } else {
+                video.pause();
+            }
+        });
+    }, { threshold: 0.1 });
+
+    // Create 15 cells (3x5 grid optimized for mobile performance)
+    for (let i = 0; i < 15; i++) {
+        const videoUrl = videoFiles[i % videoFiles.length];
+        const cell = document.createElement('div');
+        cell.className = 'video-cell';
+        
+        cell.innerHTML = `
+            <video muted loop playsinline preload="none">
+                <source src="${videoUrl}" type="video/mp4">
+            </video>
+        `;
+        grid.appendChild(cell);
+        observer.observe(cell);
     }
+}
 
     // 4. Polaroid Pile System
     function createPolaroids() {
