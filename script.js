@@ -119,21 +119,34 @@ function createVideoGrid() {
     }
 
     const swapVideo = (videoElement, index) => {
-        videoElement.classList.add('video-fading');
+        const nextSrc = getNextVideo(index);
         
-        setTimeout(() => {
-            const nextSrc = getNextVideo(index);
-            activeSources[index] = nextSrc;
+        // Preload the next video in the background
+        const tempVideo = document.createElement('video');
+        tempVideo.src = nextSrc;
+        tempVideo.preload = "auto";
+
+        // Only swap once the next video is actually ready to play
+        tempVideo.onloadeddata = () => {
+            videoElement.classList.add('video-fading');
             
-            videoElement.src = nextSrc;
-            videoElement.load();
-            videoElement.play().catch(e => console.log("Swap play prevented", e));
-            
-            // Fade back in after meta data loads slightly or just instantly
             setTimeout(() => {
-                videoElement.classList.remove('video-fading');
-            }, 100);
-        }, 1000); // Wait for fade out
+                activeSources[index] = nextSrc;
+                videoElement.src = nextSrc;
+                videoElement.play().catch(e => console.log("Swap play prevented", e));
+                
+                // Ensure it's ready before showing
+                videoElement.onplaying = () => {
+                    videoElement.classList.remove('video-fading');
+                };
+            }, 1000); // Wait for fade out
+        };
+
+        // Fallback: If it takes too long to load, just stay on current video and loop it once more
+        setTimeout(() => {
+            if (videoElement.classList.contains('video-fading')) return;
+            videoElement.play(); 
+        }, 3000);
     };
 
     const observer = new IntersectionObserver((entries) => {
