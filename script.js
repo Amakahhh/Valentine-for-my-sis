@@ -87,9 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. Video Grid Generator
+// 4. Video Grid Generator (Enhanced with Smart Swap)
 function createVideoGrid() {
     const grid = document.getElementById('video-grid');
-    // Unique videos only
     const baseVideos = [
         'videos/IMG_3125.MP4', 'videos/IMG_3126.MP4', 'videos/IMG_3127.MP4',
         'videos/IMG_3128.MP4', 'videos/IMG_3129.MP4', 'videos/IMG_3130.MP4',
@@ -98,26 +98,48 @@ function createVideoGrid() {
         'videos/IMG_3138.MP4'
     ];
 
-    // Create a shuffled sequence for the 15 cells
-    let videoFiles = [];
-    while (videoFiles.length < 15) {
-        const shuffledBatch = shuffle([...baseVideos]);
-        // Avoid same video at the boundary of batches
-        if (videoFiles.length > 0 && shuffledBatch[0] === videoFiles[videoFiles.length - 1]) {
-            // Swap first element of batch with a random one inside the batch
-            const swapIdx = Math.floor(Math.random() * (shuffledBatch.length - 1)) + 1;
-            [shuffledBatch[0], shuffledBatch[swapIdx]] = [shuffledBatch[swapIdx], shuffledBatch[0]];
-        }
-        videoFiles.push(...shuffledBatch);
-    }
-    videoFiles = videoFiles.slice(0, 15); // Take exactly 15
+    // Maintain variety
+    const activeSources = new Array(15).fill(null);
 
+    function getNextVideo(currentIndex) {
+        let next;
+        const usedRecently = activeSources.filter(s => s !== null);
+        
+        // Try to find a video not currently in use
+        const available = baseVideos.filter(v => !usedRecently.includes(v));
+        
+        if (available.length > 0) {
+            next = available[Math.floor(Math.random() * available.length)];
+        } else {
+            // If all are used, just don't pick the same one as this tile just had
+            const pool = baseVideos.filter(v => v !== activeSources[currentIndex]);
+            next = pool[Math.floor(Math.random() * pool.length)];
+        }
+        return next;
+    }
+
+    const swapVideo = (videoElement, index) => {
+        videoElement.classList.add('video-fading');
+        
+        setTimeout(() => {
+            const nextSrc = getNextVideo(index);
+            activeSources[index] = nextSrc;
+            
+            videoElement.src = nextSrc;
+            videoElement.load();
+            videoElement.play().catch(e => console.log("Swap play prevented", e));
+            
+            // Fade back in after meta data loads slightly or just instantly
+            setTimeout(() => {
+                videoElement.classList.remove('video-fading');
+            }, 100);
+        }, 1000); // Wait for fade out
+    };
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             const video = entry.target.querySelector('video');
             if (entry.isIntersecting) {
-                video.preload = "auto";
                 video.play().catch(e => console.log("Video play delayed", e));
             } else {
                 video.pause();
@@ -125,17 +147,27 @@ function createVideoGrid() {
         });
     }, { threshold: 0.1 });
 
-    // Create 15 cells (3x5 grid optimized for mobile performance)
+    // Initial Grid Creation
+    const shuffledStart = shuffle([...baseVideos]);
+
     for (let i = 0; i < 15; i++) {
-        const videoUrl = videoFiles[i % videoFiles.length];
+        const videoUrl = shuffledStart[i % shuffledStart.length];
+        activeSources[i] = videoUrl;
+
         const cell = document.createElement('div');
         cell.className = 'video-cell';
         
         cell.innerHTML = `
-            <video muted loop playsinline preload="none">
+            <video muted playsinline preload="auto">
                 <source src="${videoUrl}" type="video/mp4">
             </video>
         `;
+
+        const video = cell.querySelector('video');
+        
+        // When video ends, swap it for a new one
+        video.onended = () => swapVideo(video, i);
+
         grid.appendChild(cell);
         observer.observe(cell);
     }
