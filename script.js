@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. Video Grid Generator
-// 4. Video Grid Generator (Static Looping)
+// 4. Video Grid Generator (Static Looping - Fixed)
 function createVideoGrid() {
     const grid = document.getElementById('video-grid');
     const baseVideos = [
@@ -98,37 +98,45 @@ function createVideoGrid() {
         'videos/IMG_3138.MP4'
     ];
 
+    // Ensure we have exactly 15 shuffled videos
+    let videoFiles = [];
+    const shuffledPool = shuffle([...baseVideos]);
+    // Fill 15 slots from the pool
+    for(let i = 0; i < 15; i++) {
+        videoFiles.push(shuffledPool[i % shuffledPool.length]);
+    }
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             const video = entry.target.querySelector('video');
             if (entry.isIntersecting) {
-                video.play().catch(e => console.log("Video play delayed", e));
+                video.play().catch(e => console.log("Play interrupted", e));
             } else {
                 video.pause();
             }
         });
     }, { threshold: 0.1 });
 
-    // Create a shuffled sequence for the 15 cells
-    let videoFiles = [];
-    while (videoFiles.length < 15) {
-        videoFiles.push(...shuffle([...baseVideos]));
-    }
-    videoFiles = videoFiles.slice(0, 15);
+    grid.innerHTML = ''; // Clear just in case
 
-    for (let i = 0; i < 15; i++) {
-        const videoUrl = videoFiles[i];
+    videoFiles.forEach((videoUrl, idx) => {
         const cell = document.createElement('div');
         cell.className = 'video-cell';
         
-        cell.innerHTML = `
-            <video muted loop playsinline preload="auto">
-                <source src="${videoUrl}" type="video/mp4">
-            </video>
-        `;
+        // Single src on video tag is more reliable for JS than <source> tags
+        const video = document.createElement('video');
+        video.src = videoUrl;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.preload = "auto";
+        
+        video.onerror = () => console.log(`Error loading video: ${videoUrl}`);
+
+        cell.appendChild(video);
         grid.appendChild(cell);
         observer.observe(cell);
-    }
+    });
 }
 
     // 4. Polaroid Pile System
