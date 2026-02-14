@@ -20,6 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const message = `I love you Nene, you're the best thing in my life, I can't imagine how other people that don't have twin sisters live, you're everything to me, I can tell you anything and everything, I trust your judgement, I seek your advice, you're the one person in my life that I want the very best and even more for.\n\nYou're always there for me, even when we're miles apart, you complete me, I was thinking about how I have no man to wish happy valentines day to, but then I realized that I have someone in my life who I love more than I've ever loved anyone else, if valentines is a day of love, then Valentines is definitely our day, because I LOVE YOU, in fact loving you is not a choice, it's like the oxygen I breathe, I remember how when we were younger I'd cry if something sad were happening to you.\n\nYou mean the world to me, thank You for all the love you've shown me, for how supportive you've been and for all the fun we've had.\n\nI can't wait for all the many more adventures that await us.`;
 
+    // Generic Shuffle Function
+    const shuffle = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    };
+
     // 1. Sleek No Button Logic
     const moveNoButton = () => {
         const padding = 20;
@@ -80,14 +89,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Video Grid Generator
 function createVideoGrid() {
     const grid = document.getElementById('video-grid');
-    const videoFiles = [
+    // Unique videos only
+    const baseVideos = [
         'videos/IMG_3125.MP4', 'videos/IMG_3126.MP4', 'videos/IMG_3127.MP4',
         'videos/IMG_3128.MP4', 'videos/IMG_3129.MP4', 'videos/IMG_3130.MP4',
         'videos/IMG_3131.MP4', 'videos/IMG_3132.MP4', 'videos/IMG_3133.MP4',
         'videos/IMG_3134.MP4', 'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
-        'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
         'videos/IMG_3138.MP4'
     ];
+
+    // Create a shuffled sequence for the 15 cells
+    let videoFiles = [];
+    while (videoFiles.length < 15) {
+        const shuffledBatch = shuffle([...baseVideos]);
+        // Avoid same video at the boundary of batches
+        if (videoFiles.length > 0 && shuffledBatch[0] === videoFiles[videoFiles.length - 1]) {
+            // Swap first element of batch with a random one inside the batch
+            const swapIdx = Math.floor(Math.random() * (shuffledBatch.length - 1)) + 1;
+            [shuffledBatch[0], shuffledBatch[swapIdx]] = [shuffledBatch[swapIdx], shuffledBatch[0]];
+        }
+        videoFiles.push(...shuffledBatch);
+    }
+    videoFiles = videoFiles.slice(0, 15); // Take exactly 15
+
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -154,13 +178,7 @@ function createVideoGrid() {
 
         // Tracking for variety
         let recentIndices = []; 
-        const shuffle = (array) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        };
+    // 4. Polaroid Pile System
         
         shuffle(captions);
 
@@ -361,15 +379,20 @@ function createVideoGrid() {
     // 7. Hollywood Mosaic / Nebula Generator
     function initHollywood() {
         const letters = document.querySelectorAll('.letter');
-        const images = [
+        const images = shuffle([
             'images/photo_2026-02-13_11-45-54.jpg',
             'images/photo_2026-02-13_11-46-16.jpg',
             'images/photo_2026-02-13_11-46-20.jpg',
             'images/photo_2026-02-13_11-46-24.jpg',
             'images/photo_2026-02-13_11-46-28.jpg',
             'images/photo_2026-02-13_11-46-33.jpg',
-            'images/photo_2026-02-13_11-46-46.jpg'
-        ];
+            'images/photo_2026-02-13_11-46-37.jpg',
+            'images/photo_2026-02-13_11-46-41.jpg',
+            'images/photo_2026-02-13_11-46-46.jpg',
+            'images/photo_2026-02-13_11-46-50.jpg',
+            'images/photo_2026-02-13_11-46-55.jpg'
+        ]);
+
 
         letters.forEach((letter, idx) => {
             letter.style.backgroundImage = `url(${images[idx % images.length]})`;
