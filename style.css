@@ -277,10 +277,13 @@ h1,
 /* Photo Booth */
 .polaroid-pile {
     position: relative;
-    height: 600px;
+    height: 500px;
+    /* Reduced for better mobile scroll */
     width: 100%;
     perspective: 1000px;
     margin-bottom: 50px;
+    overflow: hidden;
+    /* Prevent horizontal scroll from random scatter */
 }
 
 .polaroid {
@@ -360,6 +363,7 @@ h1,
     margin: 40px auto;
     width: 100%;
     max-width: 600px;
+    padding: 0 5px;
 }
 
 .video-cell {
@@ -393,15 +397,13 @@ h1,
 
 .hollywood-sign {
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
+    /* Allow wrapping if absolutely needed, but clamp will try to fit */
     justify-content: center;
     align-items: center;
-    gap: 1.5vw;
-    /* Fluid gap */
+    gap: 10px;
     width: 100%;
-    padding: 0 10px;
-    flex-wrap: nowrap;
-    /* Strictly on one line */
+    padding: 0 15px;
 }
 
 .letter {
@@ -462,56 +464,70 @@ h1,
 /* Mobile Media Queries */
 @media (max-width: 480px) {
     #hero h1 {
-        font-size: 3.2rem;
+        font-size: 3.5rem;
+        line-height: 1.1;
     }
 
     .question {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
+        padding: 0 20px;
     }
 
     #yesBtn {
-        padding: 12px 35px;
+        padding: 15px 40px;
     }
 
     .logo {
-        font-size: 1.4rem;
+        font-size: 1.6rem;
     }
 
     .section-title {
-        font-size: 1.8rem;
+        font-size: 2rem;
+        margin: 40px 0 20px;
+    }
+
+    .message-card {
+        padding: 20px;
+        margin-bottom: 40px;
+    }
+
+    .message-content {
+        font-size: 1.25rem;
     }
 
     .polaroid {
-        width: 140px;
-        height: 190px;
+        width: 130px;
+        height: 180px;
+    }
+
+    .polaroid-pile {
+        height: 450px;
     }
 
     .video-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+        gap: 6px;
     }
 
     .hollywood-container {
-        padding: 80px 0;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        width: 100vw;
-        margin-left: -20px;
-        /* Counter body padding */
+        padding: 60px 0;
+        overflow: visible;
+        width: 100%;
+        margin-left: 0;
     }
 
     .hollywood-sign {
-        gap: 4vw;
-        padding: 0 40px;
+        gap: 8px;
+        padding: 0 10px;
     }
 
     .letter {
-        font-size: 14vw;
+        font-size: 12vw;
+        /* Slightly smaller to ensure fit */
         text-shadow:
             0.5px 0.5px 0 #cf8a99,
             1px 1px 0 #af6877,
-            1.5px 1.5px 0 #8f4655,
-            4px 4px 12px rgba(0, 0, 0, 0.4);
+            2px 2px 8px rgba(0, 0, 0, 0.4);
     }
 }
 
