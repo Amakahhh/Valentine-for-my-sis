@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. Video Grid Generator
-// 4. Video Grid Generator (Enhanced with Smart Swap)
+// 4. Video Grid Generator (Static Looping)
 function createVideoGrid() {
     const grid = document.getElementById('video-grid');
     const baseVideos = [
@@ -97,57 +97,6 @@ function createVideoGrid() {
         'videos/IMG_3134.MP4', 'videos/IMG_3136.MP4', 'videos/IMG_3137.MP4',
         'videos/IMG_3138.MP4'
     ];
-
-    // Maintain variety
-    const activeSources = new Array(15).fill(null);
-
-    function getNextVideo(currentIndex) {
-        let next;
-        const usedRecently = activeSources.filter(s => s !== null);
-        
-        // Try to find a video not currently in use
-        const available = baseVideos.filter(v => !usedRecently.includes(v));
-        
-        if (available.length > 0) {
-            next = available[Math.floor(Math.random() * available.length)];
-        } else {
-            // If all are used, just don't pick the same one as this tile just had
-            const pool = baseVideos.filter(v => v !== activeSources[currentIndex]);
-            next = pool[Math.floor(Math.random() * pool.length)];
-        }
-        return next;
-    }
-
-    const swapVideo = (videoElement, index) => {
-        const nextSrc = getNextVideo(index);
-        
-        // Preload the next video in the background
-        const tempVideo = document.createElement('video');
-        tempVideo.src = nextSrc;
-        tempVideo.preload = "auto";
-
-        // Only swap once the next video is actually ready to play
-        tempVideo.onloadeddata = () => {
-            videoElement.classList.add('video-fading');
-            
-            setTimeout(() => {
-                activeSources[index] = nextSrc;
-                videoElement.src = nextSrc;
-                videoElement.play().catch(e => console.log("Swap play prevented", e));
-                
-                // Ensure it's ready before showing
-                videoElement.onplaying = () => {
-                    videoElement.classList.remove('video-fading');
-                };
-            }, 1000); // Wait for fade out
-        };
-
-        // Fallback: If it takes too long to load, just stay on current video and loop it once more
-        setTimeout(() => {
-            if (videoElement.classList.contains('video-fading')) return;
-            videoElement.play(); 
-        }, 3000);
-    };
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -160,27 +109,23 @@ function createVideoGrid() {
         });
     }, { threshold: 0.1 });
 
-    // Initial Grid Creation
-    const shuffledStart = shuffle([...baseVideos]);
+    // Create a shuffled sequence for the 15 cells
+    let videoFiles = [];
+    while (videoFiles.length < 15) {
+        videoFiles.push(...shuffle([...baseVideos]));
+    }
+    videoFiles = videoFiles.slice(0, 15);
 
     for (let i = 0; i < 15; i++) {
-        const videoUrl = shuffledStart[i % shuffledStart.length];
-        activeSources[i] = videoUrl;
-
+        const videoUrl = videoFiles[i];
         const cell = document.createElement('div');
         cell.className = 'video-cell';
         
         cell.innerHTML = `
-            <video muted playsinline preload="auto">
+            <video muted loop playsinline preload="auto">
                 <source src="${videoUrl}" type="video/mp4">
             </video>
         `;
-
-        const video = cell.querySelector('video');
-        
-        // When video ends, swap it for a new one
-        video.onended = () => swapVideo(video, i);
-
         grid.appendChild(cell);
         observer.observe(cell);
     }
